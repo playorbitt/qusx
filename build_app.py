@@ -24,7 +24,8 @@ glyph_v1_json = open(os.path.join(_DIR, 'qpc_v1_glyphs.json'), encoding='utf-8')
 reciters = json.load(open(os.path.join(_DIR, 'reciters.json'), encoding='utf-8'))
 # Local Al-Hadr juz pack (canonical word alignments + offline opus) — tested
 # against the OnX release; appears first in the picker.
-reciters = [["local_alhadr", "Al-Hadr (local alignments)"]] + reciters
+# Word-timed local packs: ./local_alhadr/ (Al-Hadr) and ./local_para/ (Para recitation).
+reciters = [["local_alhadr", "Al-Hadr"], ["local_para", "Para recitation"]] + reciters
 reciters_json = json.dumps(reciters, ensure_ascii=False)
 
 # Per-surah ayah-count deltas across qira'at/riwayah numbering traditions
@@ -1836,13 +1837,28 @@ async function ensureTajweedFont(page) {
   return ensurePageFont('v4', page);
 }
 
-const RECITERS = __RECITERS_JSON__; // first entry may be local_alhadr; rest are QUA HF configs
-let RECITER_CONFIG = RECITERS[0][0]; // may fall back after probing local_alhadr/
+const RECITERS = __RECITERS_JSON__; // local packs first (ids start with "local_"); rest are QUA HF configs
+let RECITER_CONFIG = RECITERS[0][0]; // may fall back after probing the local pack
 const LOCAL_RECITER_ID = 'local_alhadr';
-// Preview switch: ?pack=<folder> loads another word-timed local pack (e.g. local_para) in place of local_alhadr.
-const LOCAL_PACK_DIR = (()=>{try{const v=new URLSearchParams(location.search).get('pack');return v&&/^[a-z0-9_-]+$/i.test(v)?v:'local_alhadr';}catch(_){return 'local_alhadr';}})();
-let LOCAL_MANIFEST = null; // loaded on demand from ./local_alhadr/manifest.json
-let LOCAL_ALHADR_AVAILABLE = null; // null = unknown, true/false after probe
+// Every reciter whose id starts with "local_" is a word-timed pack served from ./<id>/manifest.json
+// (local_alhadr = Al-Hadr, local_para = Para recitation). ?pack=<folder> still works: a listed pack id
+// selects that reciter; any other folder (a preview such as local_alhadr_m4a) stands in for Al-Hadr.
+const LOCAL_PACK_OVERRIDE = (()=>{try{const v=new URLSearchParams(location.search).get('pack');return v&&/^[a-z0-9_-]+$/i.test(v)?v:'';}catch(_){return '';}})();
+if (LOCAL_PACK_OVERRIDE && RECITERS.some(r => r[0] === LOCAL_PACK_OVERRIDE)) RECITER_CONFIG = LOCAL_PACK_OVERRIDE;
+function localPackDirFor(id) {
+  if (id === LOCAL_RECITER_ID && LOCAL_PACK_OVERRIDE && !RECITERS.some(r => r[0] === LOCAL_PACK_OVERRIDE)) return LOCAL_PACK_OVERRIDE;
+  return id;
+}
+let LOCAL_PACK_DIR = localPackDirFor(RECITER_CONFIG.startsWith('local_') ? RECITER_CONFIG : LOCAL_RECITER_ID);
+const LOCAL_MANIFESTS = {};      // pack dir -> normalized manifest
+const LOCAL_PACK_STATE = {};     // pack dir -> true (loaded) / false (missing)
+let LOCAL_MANIFEST = null;       // the current local reciter's manifest
+let LOCAL_ALHADR_AVAILABLE = null; // availability of the current local pack (null = not probed)
+function selectLocalPack(id) {   // point LOCAL_* at the pack of local reciter `id`
+  LOCAL_PACK_DIR = localPackDirFor(id);
+  LOCAL_MANIFEST = LOCAL_MANIFESTS[LOCAL_PACK_DIR] || null;
+  LOCAL_ALHADR_AVAILABLE = LOCAL_PACK_DIR in LOCAL_PACK_STATE ? LOCAL_PACK_STATE[LOCAL_PACK_DIR] : null;
+}
 let currentAudioKey = null; // actual audio file identity, not just a timestamp
 let audioSeekToken=0, pendingAudioSeek=null, readerLoadToken=0, readerLoading=false;
 function readerAudioUrl(url){
@@ -1857,52 +1873,42 @@ function cancelPendingAudioSeek(){
   pendingAudioSeek=null;
 }
 
-function isLocalReciter() { return RECITER_CONFIG === LOCAL_RECITER_ID; }
+function isLocalReciter() { return String(RECITER_CONFIG).startsWith('local_'); }
 
 function firstOnlineReciter() {
-  const hit = RECITERS.find(r => r[0] !== LOCAL_RECITER_ID);
+  const hit = RECITERS.find(r => !String(r[0]).startsWith('local_'));
   return hit ? hit[0] : RECITERS[0][0];
 }
 
 async function ensureLocalManifest() {
+  if (isLocalReciter()) selectLocalPack(RECITER_CONFIG);
   if (LOCAL_MANIFEST) return LOCAL_MANIFEST;
   const res = await fetch(LOCAL_PACK_DIR+'/manifest.json');
   if (!res.ok) {
-    LOCAL_ALHADR_AVAILABLE = false;
-    throw new Error('local Al-Hadr pack not found (' + res.status + '). Use an online reciter, or serve this folder over HTTP with local_alhadr/ present.');
+    LOCAL_PACK_STATE[LOCAL_PACK_DIR] = LOCAL_ALHADR_AVAILABLE = false;
+    throw new Error('Recitation pack ' + LOCAL_PACK_DIR + ' not found (' + res.status + '). Choose another reciter.');
   }
-  LOCAL_MANIFEST = normalizeLocalManifest(await res.json());
-  LOCAL_ALHADR_AVAILABLE = true;
+  LOCAL_MANIFEST = LOCAL_MANIFESTS[LOCAL_PACK_DIR] = normalizeLocalManifest(await res.json());
+  LOCAL_PACK_STATE[LOCAL_PACK_DIR] = LOCAL_ALHADR_AVAILABLE = true;
   return LOCAL_MANIFEST;
 }
 
-/** Soft probe — never throws. Used at boot so GitHub Pages can skip Al-Hadr. */
+/** Soft probe of the current local reciter's pack — never throws. */
 async function probeLocalAlhadr() {
+  selectLocalPack(isLocalReciter() ? RECITER_CONFIG : LOCAL_RECITER_ID);
   if (LOCAL_ALHADR_AVAILABLE === true && LOCAL_MANIFEST) return true;
   if (LOCAL_ALHADR_AVAILABLE === false) return false;
-  try {
-    const res = await fetch(LOCAL_PACK_DIR+'/manifest.json', { method: 'GET' });
-    if (!res.ok) {
-      LOCAL_ALHADR_AVAILABLE = false;
-      return false;
-    }
-    LOCAL_MANIFEST = normalizeLocalManifest(await res.json());
-    LOCAL_ALHADR_AVAILABLE = true;
-    return true;
-  } catch (_) {
-    LOCAL_ALHADR_AVAILABLE = false;
-    return false;
-  }
+  try { await ensureLocalManifest(); return true; }
+  catch (_) { LOCAL_PACK_STATE[LOCAL_PACK_DIR] = LOCAL_ALHADR_AVAILABLE = false; return false; }
 }
 
 function applyLocalAlhadrAvailability() {
-  const localOpt = reciterSelect && reciterSelect.querySelector('option[value="' + LOCAL_RECITER_ID + '"]');
-  if (localOpt) {
-    localOpt.disabled = !LOCAL_ALHADR_AVAILABLE;
-    localOpt.hidden = false;
-    localOpt.textContent = LOCAL_ALHADR_AVAILABLE
-      ? (LOCAL_MANIFEST?.label || 'Al-Hadr (alignments)')
-      : 'Al-Hadr (pack missing — local only)';
+  for (const opt of (reciterSelect ? reciterSelect.querySelectorAll('option[value^="local_"]') : [])) {
+    const dir = localPackDirFor(opt.value), state = LOCAL_PACK_STATE[dir];
+    opt.hidden = false;
+    opt.disabled = state === false;
+    if (state === true && LOCAL_MANIFESTS[dir]?.label) opt.textContent = LOCAL_MANIFESTS[dir].label;
+    else if (state === false) opt.textContent = opt.textContent.replace(/ \(unavailable\)$/, '') + ' (unavailable)';
   }
   if (!LOCAL_ALHADR_AVAILABLE && isLocalReciter()) {
     RECITER_CONFIG = firstOnlineReciter();
@@ -1990,6 +1996,16 @@ function nextAudioFallback(failedUrl, triedSet) {
     if (base) {
       const remote = base + '/' + name;
       if (!triedSet.has(remote)) return remote;
+    }
+  }
+  // Mirror hosts first (manifest.audioFallbackBases): when a whole archive.org storage server is
+  // unreachable (e.g. a DNS resolver that cannot see a new host), the same recording elsewhere still
+  // plays. Exact-seeking containers first; VBR MP3 only as the last resort.
+  const stem = name.replace(/\.(ogg|opus|mp3|m4a)$/i, '');
+  for (const fb of (LOCAL_MANIFEST && LOCAL_MANIFEST.audioFallbackBases) || []) {
+    for (const ext of ['.m4a', '.ogg', '.opus', '.mp3']) {
+      const alt = String(fb).replace(/\/$/, '') + '/' + stem + ext;
+      if (!triedSet.has(alt)) return alt;
     }
   }
   for (const ext of AUDIO_EXT_FALLBACKS) {
@@ -3995,7 +4011,7 @@ function finalizeLoadPosition(opts){
 // Pure helpers first so tests/timing-regression.cjs can exercise them without a DOM.
 const PROGRESS_KEY = 'qusx-progress-v2', LEGACY_RESUME_KEY = 'quran-last-read', PROGRESS_HISTORY = 20;
 function readerProgressKey(reciter, pack) {
-  return String(reciter || '') + (pack && pack !== 'local_alhadr' ? '@' + pack : '');
+  return String(reciter || '') + (pack && pack !== 'local_alhadr' && pack !== reciter ? '@' + pack : '');
 }
 function readerProgressValid(e) {
   return !!e && Number.isInteger(+e.surah) && +e.surah >= 1 && +e.surah <= 114
@@ -4051,7 +4067,12 @@ function readerProgressWrite() {
 }
 function readResumeState() {
   const store = readerProgressLoad();
-  return readerProgressLatest(store, typeof LOCAL_PACK_DIR === 'string' ? LOCAL_PACK_DIR : '');
+  // A preview folder (?pack=local_alhadr_m4a) keeps its own history; otherwise resume the last reciter used.
+  const preview = LOCAL_PACK_OVERRIDE && !RECITERS.some(r => r[0] === LOCAL_PACK_OVERRIDE) ? LOCAL_PACK_OVERRIDE : '';
+  const latest = readerProgressLatest(store, preview);
+  // An address that names a reciter (?pack=local_para) wins over the last one used.
+  if (!preview && LOCAL_PACK_OVERRIDE) return readerProgressPick(store, readerProgressKey(LOCAL_PACK_OVERRIDE, LOCAL_PACK_OVERRIDE)) || (latest && { ...latest, reciter: LOCAL_PACK_OVERRIDE, time: null, audio: null });
+  return latest;
 }
 function saveResumeState(verseIdx = currentVerseIdx) {
   if (readerLoading) return;

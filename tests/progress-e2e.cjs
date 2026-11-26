@@ -31,7 +31,9 @@ const results = []; const check = (name, ok, detail) => { results.push({ name, o
   const open = async pack => {
     await page.goto(base + '?pack=' + pack);
     await page.waitForFunction(() => typeof VERSES !== 'undefined' && VERSES.length && !readerLoading, null, { timeout: 30000 });
-    await page.waitForTimeout(800);
+    // the restored position is applied by a seek that completes once the audio metadata arrives
+    await page.waitForFunction(() => !pendingAudioSeek, null, { timeout: 15000 }).catch(() => {});
+    await page.waitForTimeout(300);
   };
   const where = () => page.evaluate(() => ({ surah: VERSES[currentVerseIdx]?.surah, ayah: VERSES[currentVerseIdx]?.ayah, t: +audio.currentTime.toFixed(2) }));
   const playAt = (surah, ayah, ms) => page.evaluate(async ({ surah, ayah, ms }) => {
