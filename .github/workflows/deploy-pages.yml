@@ -1,0 +1,34 @@
+name: Deploy to hadhr.pages.dev
+# Every push to main publishes the reader to Cloudflare Pages (project "hadhr").
+# Only the files the site needs are uploaded: the page, its data and the two word-timing
+# manifests. Audio streams from archive.org and is never part of the deploy.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: deploy-pages
+  cancel-in-progress: true
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Regression checks
+        run: node tests/timing-regression.cjs
+      - name: Collect site files
+        run: |
+          mkdir -p dist/local_alhadr dist/local_para
+          cp index.html dist/
+          for f in *.json; do case "$f" in package*.json) ;; *) cp "$f" dist/ ;; esac; done
+          cp local_alhadr/manifest.json dist/local_alhadr/
+          cp local_para/manifest.json dist/local_para/
+          ls -la dist dist/local_alhadr dist/local_para
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: 8e10c3ab6350f3d98952f490bc32da31
+          command: pages deploy dist --project-name hadhr --branch main --commit-hash ${{ github.sha }}
