@@ -1531,7 +1531,20 @@
   .page-nav button { width:22px !important; height:22px !important; }
   .controls { padding:4px 10px calc(4px + env(safe-area-inset-bottom,0px)) !important; min-height:0 !important; }
   .controls .info-bar { display:none !important; }
-  @media(min-width:381px){
+  /* Quran text centred: the page block sits in the middle under the header, each page shrinks to
+     its widest line (full lines still span edge to edge), and single-word lines are centred. */
+  body:not(.reader-translation) .mushaf-pages { max-width:860px !important; margin-inline:auto !important; align-self:center; }
+  body:not(.reader-translation) .mushaf-page { margin-inline:auto; }
+  body:not(.reader-translation) .mushaf-text { width:fit-content; max-width:100%; margin-inline:auto; }
+  .mushaf-line.is-short { justify-content:center !important; }
+  body:not(.reader-translation) .mushaf-text .mushaf-line { justify-content:center; }
+  /* Desktop with the navigation sidebar open: the player spans only the reading area, not under the sidebar. */
+  @media(min-width:900px){
+    body.reader-nav-open .controls { left:calc(50% + var(--reader-nav) / 2) !important; width:calc(100% - var(--reader-nav)) !important; }
+  }
+  body.reader-translation .qv-arabic { text-align:center !important; text-align-last:center !important; }
+  #readerHeading, #readerModeBar, .page-nav.visible { margin-inline:auto; }
+  @media(min-width:381px) and (max-width:899px){
     .controls .controls-row { display:grid !important; grid-template-columns:auto 26px 36px 26px auto minmax(60px,1fr) auto !important;
       grid-template-areas:"speed prev play next start seek end" !important; gap:6px !important; align-items:center; }
     #speedSelect{grid-area:speed} #prevAyahBtn{grid-area:prev} #playBtn{grid-area:play} #nextAyahBtn{grid-area:next}
