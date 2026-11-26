@@ -1,0 +1,5 @@
+node_modules/
+.env*.local
+.claude/skills/quranlab-sdk/quranlab-sdk.checked
+local_para/audio/
+local_alhadr_m4a/

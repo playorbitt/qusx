@@ -1,0 +1,30 @@
+{
+  "name": "qusx",
+  "version": "1.0.0",
+  "description": "A single-file, no-build-step web app for reading and listening to the Qur'an with\r letter/word-level highlighting synced to audio — built on top of **QUSX** (canonical\r text, morphology, and milestone structure from [usxv2](https://github.com/dfordev1/usxv2))\r plus open audio and mushaf glyph datasets.",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dfordev1/qusx.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/dfordev1/qusx/issues"
+  },
+  "homepage": "https://github.com/dfordev1/qusx#readme",
+  "dependencies": {
+    "@quran-lab/tajweedformer": "^4.0.2"
+  },
+  "devDependencies": {
+    "playwright-core": "^1.65.1"
+  }
+}

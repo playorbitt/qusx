@@ -1535,6 +1535,60 @@ html = """<!DOCTYPE html>
   }
 
   .word.active-ayah { background:var(--accent-soft); }
+
+  /* ---- Decluttered chrome: one top bar, one view switch, compact heading ---- */
+  #browseModeSelect, #readerHeader .brand-en, #readerQuickSettings, #readerModeBar .legacy-view { display:none !important; }
+  .view-switch { display:inline-flex; gap:2px; padding:3px; border:1px solid var(--border); border-radius:999px; background:var(--bg-elev, transparent); }
+  .view-switch button { border:0; background:transparent; color:var(--text-muted); font:600 14px system-ui,sans-serif; padding:6px 14px; border-radius:999px; cursor:pointer; }
+  .view-switch button[aria-pressed="true"] { background:var(--accent-soft); color:var(--accent); }
+  .view-switch button:focus-visible { outline:2px solid var(--accent); outline-offset:1px; }
+  #readerModeBar { justify-content:center; }
+  #readerModeBar .reader-mode-tools { display:contents; }
+  /* Heading on one line: Arabic name · English name · verse ........ icons */
+  #readerHeading { display:flex !important; flex-wrap:wrap; align-items:center; gap:4px 10px; text-align:left !important; padding:8px 0 !important; margin:0 !important; border-bottom:1px solid var(--border) !important; }
+  #readerHeading .reader-ar-title { font-size:22px !important; line-height:1.3 !important; order:1; }
+  #readerHeading h1 { font-size:16px !important; font-weight:650 !important; margin:0 !important; order:2; }
+  #readerHeading p { margin:0 !important; order:3; font-size:13px !important; }
+  #readerHeading .reader-actions { display:flex; flex-wrap:wrap; align-items:center; gap:4px; margin-left:auto; order:4; }
+  #readerHeading #readerNotice { order:5; flex-basis:100%; font-size:12px; color:var(--text-muted); }
+  #readerHeading #readerNotice:empty, .load-status:empty, .tradition-info:empty { display:none !important; }
+  .page-nav.visible { width:auto; align-self:center; gap:6px !important; margin:6px auto !important; padding:2px 6px !important; font:13px system-ui,sans-serif !important; letter-spacing:0 !important; }
+  .page-nav button { width:26px !important; height:26px !important; font-size:15px !important; }
+  /* ---- Compact pass: thinner bars, one-row player ---- */
+  :root { --reader-header:48px !important; }
+  #readerHeader { height:48px !important; }
+  @media(max-width:899px){ :root{ --reader-top-inset:48px !important; } }
+  @media(max-width:560px){ #readerHeader .brand { display:none !important; } }
+  #readerModeBar { padding:4px 0 !important; }
+  .view-switch { padding:2px; }
+  .view-switch button { padding:4px 11px; font-size:13px; }
+  #readerHeading { padding:4px 0 !important; }
+  #readerHeading .reader-ar-title { font-size:20px !important; }
+  .page-nav.visible { margin:3px auto !important; }
+  .page-nav button { width:22px !important; height:22px !important; }
+  .controls { padding:4px 10px calc(4px + env(safe-area-inset-bottom,0px)) !important; min-height:0 !important; }
+  .controls .info-bar { display:none !important; }
+  @media(min-width:381px){
+    .controls .controls-row { display:grid !important; grid-template-columns:auto 26px 36px 26px auto minmax(60px,1fr) auto !important;
+      grid-template-areas:"speed prev play next start seek end" !important; gap:6px !important; align-items:center; }
+    #speedSelect{grid-area:speed} #prevAyahBtn{grid-area:prev} #playBtn{grid-area:play} #nextAyahBtn{grid-area:next}
+    #curTime{grid-area:start} #seek{grid-area:seek} #totTime{grid-area:end}
+  }
+  .controls .play-btn { width:36px !important; height:36px !important; font-size:15px !important; }
+  .controls .speed-select { padding:2px 4px !important; height:28px; font-size:12px; }
+  .controls .time { font-size:12px; min-width:0; }
+  .reader-icon { width:30px; height:30px; border:1px solid var(--border); border-radius:50%; background:transparent; color:var(--text-muted); font:15px/1 system-ui,sans-serif; cursor:pointer; display:inline-grid; place-items:center; }
+  .reader-icon:hover, .reader-icon[aria-pressed="true"], .reader-icon[aria-expanded="true"] { color:var(--accent); border-color:var(--accent); }
+  #readerJump { display:inline-flex; align-items:center; gap:6px; }
+  #readerJump[hidden] { display:none; }
+  #readerJump input { width:64px; }
+  .tradition-info { display:none !important; }
+  body.tradition-open .tradition-info { display:block !important; }
+  body[data-view="follow"] .mushaf-page-header, .page-nav.visible ~ .mushaf-pages .mushaf-page-header { display:none; }
+  .mushaf-page-header { letter-spacing:.04em; }
+  .settings-advanced { margin-top:10px; border-top:1px solid var(--border); padding-top:8px; }
+  .settings-advanced > summary { cursor:pointer; color:var(--text-muted); font:600 13px system-ui,sans-serif; padding:4px 0; }
+  .settings-advanced[open] > summary { color:var(--accent); margin-bottom:6px; }
 </style>
 </head>
 <body>
@@ -1552,7 +1606,7 @@ html = """<!DOCTYPE html>
     </select>
     <select id="surahSelect" aria-label="Surah"></select>
     <select id="juzSelect" style="display:none" title="Juz" aria-label="Juz"></select>
-    <button type="button" class="chrome-icon-btn chrome-more-btn" id="chromeMoreBtn" title="Reader settings" aria-label="Reader settings" aria-expanded="false" aria-controls="chromeMore">&#8943;</button>
+    <button type="button" class="chrome-icon-btn chrome-more-btn" id="chromeMoreBtn" title="Settings" aria-label="Settings" aria-expanded="false" aria-controls="chromeMore">&#9881;</button>
     <button type="button" class="chrome-icon-btn theme-toggle" id="themeToggle" title="Toggle light/dark" aria-label="Toggle light/dark theme">&#9789;</button>
   </div>
   <div class="chrome-more" id="chromeMore" hidden><h2 class="reader-settings-heading">Reading settings</h2>
@@ -1560,6 +1614,11 @@ html = """<!DOCTYPE html>
       <label for="reciterSelect">Reciter</label>
       <select id="reciterSelect"></select>
     </div>
+    <div class="chrome-more-row" id="fontRow">
+      <label for="fontSelect">Font</label>
+      <select id="fontSelect" title="Unicode text font for Letter/Word modes"></select>
+    </div>
+    <details class="settings-advanced"><summary>Advanced</summary>
     <div class="chrome-more-row">
       <label for="layoutSelect">Edition</label>
       <select id="layoutSelect" title="Print edition — authentic page and line composition"></select>
@@ -1599,10 +1658,6 @@ html = """<!DOCTYPE html>
         <option value="2500">2500 ms later</option>
         <option value="3000">3000 ms later</option>
       </select>
-    </div>
-    <div class="chrome-more-row" id="fontRow">
-      <label for="fontSelect">Font</label>
-      <select id="fontSelect" title="Unicode text font for Letter/Word modes"></select>
     </div>
     <div class="chrome-more-row script-row">
       <label for="scriptSelect">Arabic text</label>
@@ -1647,6 +1702,7 @@ html = """<!DOCTYPE html>
       <label title="Open grammar panel on word click (click still seeks audio)"><input type="checkbox" id="grammarClickToggle"> Click grammar</label>
     </div>
     <button type="button" id="modeBrowse" class="settings-action">Browse timed letters</button>
+    </details>
   </div>
 </div>
 </div>
@@ -1657,7 +1713,7 @@ html = """<!DOCTYPE html>
   <input type="search" id="readerSearch" placeholder="Search surah" aria-label="Search navigation">
   <nav id="readerNavList" aria-label="Reader locations"></nav>
 </aside>
-<div id="readerModeBar"><div class="reader-mode-switch" role="group" aria-label="Reading view"><button type="button" id="readerTranslationMode" aria-pressed="true">Translation</button><button type="button" id="readerReadingMode" aria-pressed="false">Reading</button></div><div class="reader-mode-tools"><button type="button" id="readerGlossToggle" aria-pressed="false">Word meanings</button><select id="readerGlossLanguage" aria-label="Spoken meaning language" hidden><option value="en">English</option><option value="hi">Hindi</option></select><button type="button" id="readerQuickSettings" aria-label="Reader settings">⚙</button><div class="mode-toggle experience-toggle" aria-label="Reading experience">
+<div id="readerModeBar"><div class="view-switch" id="viewSwitch" role="group" aria-label="View"><button type="button" data-view="read" aria-pressed="false" title="Uninterrupted Quran reading">Read</button><button type="button" data-view="follow" aria-pressed="false" title="Follow the recitation word by word">Follow</button><button type="button" data-view="explore" aria-pressed="false" title="Tap a word to study it">Explore</button><button type="button" data-view="translate" aria-pressed="false" title="Verse by verse with translation">Translate</button></div><div class="reader-mode-switch legacy-view" role="group" aria-label="Reading view"><button type="button" id="readerTranslationMode" aria-pressed="true">Translation</button><button type="button" id="readerReadingMode" aria-pressed="false">Reading</button></div><div class="reader-mode-tools"><button type="button" id="readerGlossToggle" aria-pressed="false">Word meanings</button><select id="readerGlossLanguage" aria-label="Spoken meaning language" hidden><option value="en">English</option><option value="hi">Hindi</option></select><button type="button" id="readerQuickSettings" aria-label="Reader settings">⚙</button><div class="mode-toggle experience-toggle legacy-view" aria-label="Reading experience">
     <button id="experienceRead" class="on" title="Uninterrupted Quran reading">Read</button>
     <button id="experienceFollow" title="Follow the recitation">Follow</button>
     <button id="experienceExplore" title="Tap and study individual words">Explore</button>
@@ -1666,10 +1722,11 @@ html = """<!DOCTYPE html>
   <div class="reader-ar-title" id="readerArabicName" lang="ar" dir="rtl"></div>
   <h1 id="readerChapterName">The Quran</h1><p id="readerChapterMeta">Read, listen and explore</p>
   <div class="reader-actions">
-    <label class="reader-jump">Ayah <input type="number" id="readerAyah" min="1" value="1" aria-label="Verse number"></label>
-    <button type="button" class="reader-action" id="readerGo">Go</button>
-    <button type="button" class="reader-action" id="readerBookmark" aria-pressed="false">☆ Save verse</button>
-    <button type="button" class="reader-action" id="readerShare">Copy link</button>
+    <button type="button" class="reader-icon" id="readerJumpToggle" aria-expanded="false" aria-controls="readerJump" title="Go to ayah" aria-label="Go to ayah">#</button>
+    <button type="button" class="reader-icon" id="readerBookmark" aria-pressed="false" title="Save verse" aria-label="Save verse">☆</button>
+    <button type="button" class="reader-icon" id="readerShare" title="Copy link to verse" aria-label="Copy link to verse">&#128279;</button>
+    <button type="button" class="reader-icon" id="readerInfoToggle" aria-expanded="false" aria-controls="traditionInfo" title="Ayah numbering across traditions" aria-label="Ayah numbering info">&#9432;</button>
+    <span class="reader-jump" id="readerJump" hidden><label>Ayah <input type="number" id="readerAyah" min="1" value="1" aria-label="Verse number"></label><button type="button" class="reader-action" id="readerGo">Go</button></span>
     <a class="reader-action" id="readerMeanings" href="https://dfordev1.github.io/qusx-audio/" target="_blank" rel="noopener">Spoken meanings ↗</a>
   </div>
   <div id="readerNotice" role="status"></div>
@@ -1781,6 +1838,8 @@ async function ensureTajweedFont(page) {
 const RECITERS = __RECITERS_JSON__; // first entry may be local_alhadr; rest are QUA HF configs
 let RECITER_CONFIG = RECITERS[0][0]; // may fall back after probing local_alhadr/
 const LOCAL_RECITER_ID = 'local_alhadr';
+// Preview switch: ?pack=<folder> loads another word-timed local pack (e.g. local_para) in place of local_alhadr.
+const LOCAL_PACK_DIR = (()=>{try{const v=new URLSearchParams(location.search).get('pack');return v&&/^[a-z0-9_-]+$/i.test(v)?v:'local_alhadr';}catch(_){return 'local_alhadr';}})();
 let LOCAL_MANIFEST = null; // loaded on demand from ./local_alhadr/manifest.json
 let LOCAL_ALHADR_AVAILABLE = null; // null = unknown, true/false after probe
 let currentAudioKey = null; // actual audio file identity, not just a timestamp
@@ -1806,7 +1865,7 @@ function firstOnlineReciter() {
 
 async function ensureLocalManifest() {
   if (LOCAL_MANIFEST) return LOCAL_MANIFEST;
-  const res = await fetch('local_alhadr/manifest.json');
+  const res = await fetch(LOCAL_PACK_DIR+'/manifest.json');
   if (!res.ok) {
     LOCAL_ALHADR_AVAILABLE = false;
     throw new Error('local Al-Hadr pack not found (' + res.status + '). Use an online reciter, or serve this folder over HTTP with local_alhadr/ present.');
@@ -1821,7 +1880,7 @@ async function probeLocalAlhadr() {
   if (LOCAL_ALHADR_AVAILABLE === true && LOCAL_MANIFEST) return true;
   if (LOCAL_ALHADR_AVAILABLE === false) return false;
   try {
-    const res = await fetch('local_alhadr/manifest.json', { method: 'GET' });
+    const res = await fetch(LOCAL_PACK_DIR+'/manifest.json', { method: 'GET' });
     if (!res.ok) {
       LOCAL_ALHADR_AVAILABLE = false;
       return false;
@@ -1841,7 +1900,7 @@ function applyLocalAlhadrAvailability() {
     localOpt.disabled = !LOCAL_ALHADR_AVAILABLE;
     localOpt.hidden = false;
     localOpt.textContent = LOCAL_ALHADR_AVAILABLE
-      ? 'Al-Hadr (alignments)'
+      ? (LOCAL_MANIFEST?.label || 'Al-Hadr (alignments)')
       : 'Al-Hadr (pack missing — local only)';
   }
   if (!LOCAL_ALHADR_AVAILABLE && isLocalReciter()) {
@@ -1863,12 +1922,19 @@ function applyLocalAlhadrAvailability() {
 // to absolute URLs so GitHub Pages can run Al-Hadr without shipping audio.
 // Set preferLocalAudio: true in the manifest to keep relative paths for offline.
 // Juz 1–3 MP3 files were independently downloaded and probed in audit run
-// 45358930585. Their durations match the manifest within 0.0005 seconds.
-// Prefer those browser-compatible recordings; leave unaudited tracks unchanged.
-function readerAuditedAudioUrl(url,base){
+// 45358930585. Their durations match the manifest within 0.0005 seconds, but they are
+// VBR: Chrome seeks VBR MP3 by estimate. Recording Chrome's real output after seeks in
+// juz-01.mp3 put the sound up to 5.5 s away from audio.currentTime (so highlights land on
+// the wrong word), while juz-01.ogg stayed within 0.008 s. Use the exact-seeking OGG/Opus
+// wherever the browser plays it; the MP3 is only for browsers without OGG (older Safari/iOS).
+function readerAuditedAudioUrl(url,base,canPlayOgg=readerCanPlayOgg()){
   const auditedBase='https://archive.org/download/quran-al-hadr-recitation/juz';
   if(base!==auditedBase||typeof url!=='string'||!url.startsWith(auditedBase+'/'))return url;
+  if(canPlayOgg)return url;
   return url.replace(/\/juz-(0[123])\.(ogg|opus)$/i,'/juz-$1.mp3');
+}
+function readerCanPlayOgg(){
+  try{return !!(typeof Audio!=='undefined'&&new Audio().canPlayType('audio/ogg; codecs="vorbis"'));}catch(_){return false;}
 }
 function normalizeLocalManifest(m) {
   const base = (m.audioBase || '').replace(/\/$/, '');
@@ -1888,7 +1954,8 @@ function normalizeLocalManifest(m) {
 }
 
 // Archive.org ships ogg for juz 1–21 and 23, but juz 22 and 25–30 are opus-only.
-const AUDIO_EXT_FALLBACKS = ['.mp3', '.ogg', '.opus'];
+// Exact-seeking containers first; VBR MP3 last (its seeks drift, see readerAuditedAudioUrl).
+const AUDIO_EXT_FALLBACKS = ['.ogg', '.opus', '.mp3'];
 
 function audioBasename(path) {
   if (!path) return null;
@@ -1899,7 +1966,7 @@ function audioBasename(path) {
 function audioUrlWithExt(path, ext) {
   const name = audioBasename(path);
   if (!name) return null;
-  const stem = name.replace(/\.(ogg|opus|mp3)$/i, '');
+  const stem = name.replace(/\.(ogg|opus|mp3|m4a)$/i, '');
   const newName = stem + ext;
   if (/^https?:\/\//i.test(path)) {
     const parts = path.split('/');
@@ -1916,7 +1983,7 @@ function audioUrlWithExt(path, ext) {
 function nextAudioFallback(failedUrl, triedSet) {
   const name = audioBasename(failedUrl);
   if (!name) return null;
-  const currentExt = (name.match(/\.(ogg|opus|mp3)$/i) || [])[0] || '.ogg';
+  const currentExt = (name.match(/\.(ogg|opus|mp3|m4a)$/i) || [])[0] || '.ogg';
   if (!/^https?:\/\//i.test(failedUrl)) {
     const base = LOCAL_MANIFEST && LOCAL_MANIFEST._remoteAudioBase;
     if (base) {
@@ -2497,9 +2564,10 @@ function showMushafPage(i) {
   requestAnimationFrame(markShortMushafLines);
   const pageNum = visible && visible.dataset.pageNum ? visible.dataset.pageNum : (currentPageIdx + 1);
   if (pageLabelEl) {
-    pageLabelEl.textContent = mushafPageCount > 1
-      ? ('Page ' + pageNum + ' · ' + (currentPageIdx + 1) + '/' + mushafPageCount)
-      : ('Page ' + pageNum);
+    // One page indicator: the pager carries page + juz; the in-page header is hidden in this mode.
+    const juzText = (visible?.querySelector('.mushaf-page-header')?.textContent.match(/Juz \d+/) || [''])[0];
+    pageLabelEl.textContent = 'Page ' + pageNum + (juzText ? ' · ' + juzText : '');
+    pageLabelEl.title = mushafPageCount > 1 ? (currentPageIdx + 1) + ' of ' + mushafPageCount + ' pages in this view' : '';
   }
   refreshPageNavButtons();
   if (pageNavEl) pageNavEl.classList.toggle('visible', pageViewMode === 'page' && mushafPageCount > 0);
@@ -2710,6 +2778,7 @@ function refreshReciterInfo() {
   infoAvatar.textContent = reciterInitials(name);
 }
 reciterSelect.addEventListener('change', async () => {
+  saveResumeState(); // keep the outgoing reciter's own position before switching
   RECITER_CONFIG = reciterSelect.value;
   refreshReciterInfo();
   if (!isLocalReciter() && browseMode === 'juz') {
@@ -3246,10 +3315,9 @@ function renderMushafPages() {
     const juz = g.verses[0].juz;
     const hizb = g.verses[0].hizb;
     const manzil = g.verses[0].manzil;
-    header.textContent = (g.page ? 'PAGE ' + g.page : '')
-      + (juz ? '   ·   JUZ ' + juz : '')
-      + (hizb ? '   ·   HIZB ' + hizb : '')
-      + (manzil ? '   ·   MANZIL ' + manzil : '');
+    // Page and juz only; hizb and manzil stay in the tooltip to keep the reading surface quiet.
+    header.textContent = (g.page ? 'Page ' + g.page : '') + (juz ? '  ·  Juz ' + juz : '');
+    header.title = [hizb ? 'Hizb ' + hizb : '', manzil ? 'Manzil ' + manzil : ''].filter(Boolean).join(' · ');
     pageDiv.appendChild(header);
 
     // Per-surah basmalah (not only at the start of the whole view — needed for Juz mode).
@@ -3597,6 +3665,9 @@ function normalizeArabicLocal(s) {
   if (!s) return '';
   return s
     .normalize('NFD')
+    // Hamza written above a seat or tatweel (\u0671\u0644\u0652\u0640\u064E\u0654\u0627\u062E\u0650\u0631\u064E\u0629\u0650) is the same recited hamza as a standalone \u0621
+    // (\u0671\u0644\u0652\u0621\u064E\u0627\u062E\u0650\u0631\u064E\u0629\u0650): keep it as \u0621 instead of stripping it with the vowel marks.
+    .replace(/\u0654/g, '\u0621')
     .replace(/[\u064B-\u065F\u0670\u06D6-\u06ED\u0610-\u061A]/g, '')
     .replace(/ـ/g, '') // tatweel is typography, not a recited letter
     .replace(/[ٱأإآ]/g, 'ا')
@@ -3845,7 +3916,8 @@ async function loadJuz(juzNum, opts) {
     }
     const target=VERSES[idx];
     const requestedTime=Number(opts.resumeAt);
-    const candidate=targetIdx>=0&&opts.resumeAt!=null?requestedTime:(continuePlayback&&prevAudioKey===target.audio?resumeAt:NaN);
+    const sameRecording=!opts.resumeAudio||readerAudioName(target.audio)===opts.resumeAudio;
+    const candidate=targetIdx>=0&&opts.resumeAt!=null&&sameRecording?requestedTime:(continuePlayback&&prevAudioKey===target.audio?resumeAt:NaN);
     const start=Number(target.source_offset_ms),end=start+Number(target.duration_ms);
     const ms=Number.isFinite(candidate)&&candidate*1000>=start-40&&candidate*1000<end?Math.max(start,candidate*1000):start;
     seekToWordMs(ms,idx,keepPlaying);
@@ -3916,36 +3988,89 @@ function finalizeLoadPosition(opts){
   refreshPageNavButtons();saveResumeState();
 }
 
-const RESUME_KEY = 'quran-last-read';
-let resumeSaveTimer = null;
+// ---- Reading progress -------------------------------------------------------------
+// One versioned store holding the latest position per reciter *and* pack (Al-Hadr and a
+// ?pack= preview share a reciter id but are different recordings), plus a short history.
+// Pure helpers first so tests/timing-regression.cjs can exercise them without a DOM.
+const PROGRESS_KEY = 'qusx-progress-v2', LEGACY_RESUME_KEY = 'quran-last-read', PROGRESS_HISTORY = 20;
+function readerProgressKey(reciter, pack) {
+  return String(reciter || '') + (pack && pack !== 'local_alhadr' ? '@' + pack : '');
+}
+function readerProgressValid(e) {
+  return !!e && Number.isInteger(+e.surah) && +e.surah >= 1 && +e.surah <= 114
+    && Number.isInteger(+e.ayah) && +e.ayah >= 1 && +e.ayah <= 286 && typeof e.key === 'string';
+}
+function readerProgressNormalize(raw, legacy) {
+  const store = { v: 2, byKey: {}, history: [] };
+  if (raw && raw.v === 2 && raw.byKey && typeof raw.byKey === 'object') {
+    for (const [k, e] of Object.entries(raw.byKey)) if (readerProgressValid(e) && e.key === k) store.byKey[k] = e;
+    if (Array.isArray(raw.history)) store.history = raw.history.filter(readerProgressValid).slice(0, PROGRESS_HISTORY);
+  } else if (legacy && legacy.surah) { // one-time migration of the old single slot
+    const e = { ...legacy, key: readerProgressKey(legacy.reciter, ''), ayah: +legacy.ayah || 1, surah: +legacy.surah };
+    delete e.time; // the old slot never recorded which recording its seconds belonged to
+    if (readerProgressValid(e)) { store.byKey[e.key] = e; store.history = [e]; }
+  }
+  return store;
+}
+function readerProgressRecord(store, entry) {
+  if (!readerProgressValid(entry)) return store;
+  const same = h => h.key === entry.key && h.surah === entry.surah && h.ayah === entry.ayah;
+  return { v: 2, byKey: { ...store.byKey, [entry.key]: entry },
+           history: [entry, ...store.history.filter(h => !same(h))].slice(0, PROGRESS_HISTORY) };
+}
+function readerProgressPick(store, key) {
+  return readerProgressValid(store.byKey[key]) ? store.byKey[key] : null;
+}
+function readerProgressLatest(store, pack) { // newest entry belonging to this pack context
+  const own = e => (pack && pack !== 'local_alhadr') ? e.key.endsWith('@' + pack) : !e.key.includes('@');
+  return Object.values(store.byKey).filter(own).sort((a, b) => (b.ts || 0) - (a.ts || 0))[0] || null;
+}
+function readerAudioName(url) { return String(url || '').split(/[?#]/)[0].split('/').pop(); }
+function readerResumeSeconds(entry, verse) {
+  // Seconds are only meaningful in the same recording and inside the saved ayah.
+  if (!entry || !verse || !Number.isFinite(+entry.time) || !entry.audio) return null;
+  if (readerAudioName(verse.audio) !== entry.audio) return null;
+  const ms = +entry.time * 1000, start = +verse.source_offset_ms, end = start + +verse.duration_ms;
+  return ms >= start - 40 && ms < end ? Math.max(start, ms) / 1000 : null;
+}
+
+let resumeSaveTimer = null, progressStore = null;
+function readerProgressLoad() {
+  if (progressStore) return progressStore;
+  let raw = null, legacy = null;
+  try { raw = JSON.parse(localStorage.getItem(PROGRESS_KEY) || 'null'); } catch (_) {}
+  try { legacy = JSON.parse(localStorage.getItem(LEGACY_RESUME_KEY) || 'null'); } catch (_) {}
+  return (progressStore = readerProgressNormalize(raw, legacy));
+}
+function readerProgressWrite() {
+  try { localStorage.setItem(PROGRESS_KEY, JSON.stringify(progressStore)); return true; }
+  catch (_) { // quota or private mode: drop history and retry with just the latest positions
+    try { localStorage.setItem(PROGRESS_KEY, JSON.stringify({ ...progressStore, history: [] })); return true; } catch (__) { return false; }
+  }
+}
 function readResumeState() {
-  try {
-    const raw = localStorage.getItem(RESUME_KEY);
-    if (!raw) return null;
-    const s = JSON.parse(raw);
-    if (!s || !s.surah) return null;
-    return s;
-  } catch (_) { return null; }
+  const store = readerProgressLoad();
+  return readerProgressLatest(store, typeof LOCAL_PACK_DIR === 'string' ? LOCAL_PACK_DIR : '');
 }
-function saveResumeState() {
-  if(readerLoading)return;
-  const v = VERSES[currentVerseIdx];
+function saveResumeState(verseIdx = currentVerseIdx) {
+  if (readerLoading) return;
+  const v = VERSES[verseIdx];
   if (!v) return;
-  const state = {
-    browseMode,
-    surah: v.surah,
-    ayah: v.ayah,
-    juz: currentJuz,
-    time: pendingAudioSeek?.verse===v?pendingAudioSeek.ms/1000:(currentAudioKey===v.audio?audio.currentTime:(v.source_offset_ms/1000)),
-    reciter: RECITER_CONFIG,
-    layout: currentLayout,
-    ts: Date.now(),
+  const playingHere = verseIdx === currentVerseIdx;
+  const time = playingHere && pendingAudioSeek?.verse === v ? pendingAudioSeek.ms / 1000
+    : (playingHere && currentAudioKey === v.audio ? audio.currentTime : v.source_offset_ms / 1000);
+  const entry = {
+    key: readerProgressKey(RECITER_CONFIG, isLocalReciter() ? LOCAL_PACK_DIR : ''),
+    reciter: RECITER_CONFIG, browseMode, surah: v.surah, ayah: v.ayah, juz: currentJuz,
+    time: Number.isFinite(time) ? +time.toFixed(3) : null, audio: v.audio ? readerAudioName(v.audio) : null,
+    layout: currentLayout, view: document.body.dataset.view || null, ts: Date.now(),
   };
-  try { localStorage.setItem(RESUME_KEY, JSON.stringify(state)); } catch (_) {}
+  progressStore = readerProgressRecord(readerProgressLoad(), entry);
+  readerProgressWrite();
 }
-function scheduleSaveResume() {
+function scheduleSaveResume(verseIdx) {
   clearTimeout(resumeSaveTimer);
-  resumeSaveTimer = setTimeout(saveResumeState, 800);
+  resumeSaveTimer = setTimeout(() => saveResumeState(verseIdx), 800);
 }
 
 function applyPlaybackSpeed(rate) {
@@ -4061,7 +4186,8 @@ async function loadSurah(num, opts) {
     }
     const target=VERSES[idx];
     const requestedTime=Number(opts.resumeAt);
-    const candidate=targetIdx>=0&&opts.resumeAt!=null?requestedTime:(continuePlayback&&prevAudioKey===target.audio?resumeAt:NaN);
+    const sameRecording=!opts.resumeAudio||readerAudioName(target.audio)===opts.resumeAudio;
+    const candidate=targetIdx>=0&&opts.resumeAt!=null&&sameRecording?requestedTime:(continuePlayback&&prevAudioKey===target.audio?resumeAt:NaN);
     const start=Number(target.source_offset_ms),end=start+Number(target.duration_ms);
     const ms=Number.isFinite(candidate)&&candidate*1000>=start-40&&candidate*1000<end?Math.max(start,candidate*1000):start;
     seekToWordMs(ms,idx,keepPlaying);
@@ -4206,9 +4332,18 @@ function readerAdvancePlayback(ended){
   const v=VERSES[currentVerseIdx];
   if(!v||v.audio!==currentAudioKey||!readerAudioMatches(v.audio))return;
   if(!ended&&(v.clipRelative||audio.currentTime*1000<Number(v.source_offset_ms)+Number(v.duration_ms)))return;
-  const next=VERSES[currentVerseIdx+1];
+  // Skip ayahs that have no verified audio instead of stopping on them. Inside one
+  // continuous recording (a juz file) the audio simply plays on through the
+  // unhighlighted ayah until the clock reaches the next aligned one.
+  let ni=currentVerseIdx+1;
+  while(ni<VERSES.length&&!(VERSES[ni].audio&&readerValidSpan(VERSES[ni].source_offset_ms,VERSES[ni].duration_ms)))ni++;
+  const next=VERSES[ni];
   if(next){
-    if(ended||next.audio!==v.audio)jumpToVerse(currentVerseIdx+1,true);
+    if(next.audio===v.audio&&!ended&&!v.clipRelative){
+      if(ni>currentVerseIdx+1)currentVerseIdx=ni-1; // hand the clock to the next aligned ayah
+      return;
+    }
+    if(ended||next.audio!==v.audio)jumpToVerse(ni,true);
     return;
   }
   if(isLocalReciter()){
@@ -4474,10 +4609,34 @@ audio.addEventListener('seeked',()=>{lastScrollKey='';updateHighlight();});
 audio.addEventListener('playing',()=>{lastScrollKey='';updateHighlight();readerStartHighlightClock();});
 document.addEventListener('visibilitychange',()=>{if(document.hidden)readerStopHighlightClock();else{lastScrollKey='';updateHighlight();readerStartHighlightClock();}});
 
-window.addEventListener('beforeunload', saveResumeState);
+// Save on every way a page can go away: desktop unload, mobile pagehide/bfcache,
+// tab switch, and the page being frozen in the background.
+const saveNow = () => { clearTimeout(resumeSaveTimer); saveResumeState(readerReadingIdx()); };
+window.addEventListener('beforeunload', saveNow);
+window.addEventListener('pagehide', saveNow);
+document.addEventListener('freeze', saveNow);
 document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'hidden') saveResumeState();
+  if (document.visibilityState === 'hidden') saveNow();
 });
+// Reading without playback: remember the first ayah visible below the fixed header.
+function readerReadingIdx() {
+  if (!audio.paused || pendingAudioSeek) return currentVerseIdx;
+  const top = (document.getElementById('readerModeBar')?.getBoundingClientRect().bottom || 0) + 4;
+  for (const el of document.querySelectorAll('[data-ayah][data-surah]')) {
+    const r = el.getBoundingClientRect();
+    if (r.bottom > top && r.top < innerHeight && r.width) {
+      const i = findVerseIdx(+el.dataset.surah, +el.dataset.ayah);
+      return i >= 0 ? i : currentVerseIdx;
+    }
+  }
+  return currentVerseIdx;
+}
+let scrollSaveTimer = 0;
+window.addEventListener('scroll', () => {
+  if (!audio.paused || readerLoading) return;
+  clearTimeout(scrollSaveTimer);
+  scrollSaveTimer = setTimeout(() => saveResumeState(readerReadingIdx()), 1200);
+}, { passive: true });
 
 prevAyahBtn.addEventListener('click', () => {
   if(readerLoading)return;
@@ -4773,11 +4932,14 @@ seek.addEventListener('click', () => { if (browsing) exitBrowse(); });
     const meta=SURAH_INDEX.find(s=>s.num===v.surah);
     readerUI('readerArabicName').textContent=meta?.nameArabic||'';
     readerUI('readerChapterName').textContent=meta?.name||'The Quran';
-    readerUI('readerChapterMeta').textContent=(browseMode==='juz'?'Juz '+currentJuz+' · ':'')+'Surah '+v.surah+' · '+(meta?.ayahCount||'')+' verses · '+key;
+    // Compact heading shows just the current verse; the full line stays as a tooltip.
+    readerUI('readerChapterMeta').textContent=key;
+    readerUI('readerChapterMeta').title=(browseMode==='juz'?'Juz '+currentJuz+' · ':'')+'Surah '+v.surah+' · '+(meta?.ayahCount||'')+' verses';
     readerUI('readerAyah').max=meta?.ayahCount||1;
     if(document.activeElement!==readerUI('readerAyah'))readerUI('readerAyah').value=v.ayah;
     const saved=readerBookmarks.includes(key);
-    readerUI('readerBookmark').textContent=saved?'★ Saved':'☆ Save verse';
+    readerUI('readerBookmark').textContent=saved?'★':'☆';
+    readerUI('readerBookmark').title=saved?'Saved — tap to remove':'Save verse';
     readerUI('readerBookmark').setAttribute('aria-pressed',String(saved));
     readerUI('readerMeanings').href='https://dfordev1.github.io/qusx-audio/#'+key;
     readerNav();
@@ -5056,6 +5218,51 @@ seek.addEventListener('click', () => { if (browsing) exitBrowse(); });
   readerUI('readerReadingMode').setAttribute('aria-pressed',String(readerPresentation==='reading'));
   readerUI('readerGlossToggle').hidden=readerPresentation!=='translation';
 
+  // One view switch (Read · Follow · Explore · Translate) drives the two older controls:
+  // the translation/reading presentation and the read/follow/explore experience.
+  const viewSwitch=readerUI('viewSwitch');
+  function readerCurrentView(){return readerPresentation==='translation'?'translate':experience;}
+  function readerSyncViewSwitch(){
+    const view=readerCurrentView();
+    for(const b of viewSwitch.querySelectorAll('button'))b.setAttribute('aria-pressed',String(b.dataset.view===view));
+    document.body.dataset.view=view;
+  }
+  viewSwitch.addEventListener('click',e=>{
+    const b=e.target.closest('button[data-view]');if(!b)return;
+    const view=b.dataset.view;
+    if(view==='translate'){if(readerPresentation!=='translation')readerSwitchPresentation('translation');}
+    else{
+      if(readerPresentation!=='reading')readerSwitchPresentation('reading');
+      experienceButtons[view]?.click();
+    }
+    readerSyncViewSwitch();
+  });
+  for(const id of ['readerTranslationMode','readerReadingMode'])readerUI(id).addEventListener('click',readerSyncViewSwitch);
+  Object.values(experienceButtons).forEach(btn=>btn.addEventListener('click',readerSyncViewSwitch));
+  readerSyncViewSwitch();
+
+  // Passing messages ("Resumed 2:54", "Verse link copied.") clear themselves; errors stay.
+  for(const el of [loadStatusEl,readerUI('readerNotice')]){
+    let timer=0;
+    new MutationObserver(()=>{
+      clearTimeout(timer);
+      if(!el.textContent||el.classList.contains('error'))return;
+      timer=setTimeout(()=>{if(!el.classList.contains('error'))el.textContent='';},3500);
+    }).observe(el,{childList:true,characterData:true,subtree:true});
+  }
+
+  // Compact header: the ayah jump and the tradition note open on demand.
+  readerUI('readerJumpToggle').onclick=()=>{
+    const box=readerUI('readerJump'),open=box.hidden;
+    box.hidden=!open;readerUI('readerJumpToggle').setAttribute('aria-expanded',String(open));
+    if(open)readerUI('readerAyah').focus();
+  };
+  readerUI('readerInfoToggle').onclick=()=>{
+    const open=!document.body.classList.contains('tradition-open');
+    document.body.classList.toggle('tradition-open',open);
+    readerUI('readerInfoToggle').setAttribute('aria-expanded',String(open));
+  };
+
 // Refit when webfonts finish and when either fixed toolbar changes height.
 syncReaderChromeInsets();
 if(document.fonts){
@@ -5102,7 +5309,8 @@ if(typeof ResizeObserver==='function'){
       const resumeOpts = {
         continuePlayback: true,
         keepPlaying: false,
-        resumeAt: Number(saved.time) || 0,
+        resumeAt: Number.isFinite(+saved.time) && saved.time !== null ? +saved.time : null,
+        resumeAudio: saved.audio || null,
         resumeSurah: saved.surah,
         resumeAyah: saved.ayah || 1,
       };
