@@ -2174,7 +2174,10 @@ function seekToWordMs(absMs,verseIdx,autoplay){
       const issue=readerLocalDurationIssue(Number(track?.durationSeconds),audio.duration,(Number(v.source_offset_ms)+Number(v.duration_ms))/1000);
       if(issue){if(audio.readyState<3)return;if(readerRetryLocalAudio(v,verseIdx,absMs,request.autoplay,issue))return;fail(issue+'. No matching format available. Recitation stopped.');return;}
     }
-    if(Math.abs(audio.currentTime-absMs/1000)>.075||!readerContainsTime(v,audio.currentTime*1000))return;
+    // absMs was already clamped inside this ayah, so landing within 75 ms of it confirms the seek.
+    // (Checking currentTime against the ayah span failed when the browser reported 1027.599999 for
+    // a seek to 1027.600: the seek never confirmed and playback never started, e.g. at 18:10.)
+    if(Math.abs(audio.currentTime-absMs/1000)>.075)return;
     cleanup();pendingAudioSeek=null;currentVerseIdx=verseIdx;
     loadStatusEl.classList.remove('error');
     refreshScrubber(verseIdx);refreshInfoBar(verseIdx);syncPageToVerse(verseIdx);
