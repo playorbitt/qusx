@@ -1553,8 +1553,8 @@
   body.reader-translation .qv-arabic { text-align:center !important; text-align-last:center !important; }
   #readerHeading, #readerModeBar, .page-nav.visible { margin-inline:auto; }
   @media(min-width:381px) and (max-width:899px){
-    .controls .controls-row { display:grid !important; grid-template-columns:auto 26px 36px 26px auto minmax(60px,1fr) auto !important;
-      grid-template-areas:"speed prev play next start seek end" !important; gap:6px !important; align-items:center; }
+    .controls .controls-row { display:grid !important; grid-template-columns:auto 26px 36px 26px 28px auto minmax(50px,1fr) auto !important;
+      grid-template-areas:"speed prev play next menu start seek end" !important; gap:6px !important; align-items:center; }
     #speedSelect{grid-area:speed} #prevAyahBtn{grid-area:prev} #playBtn{grid-area:play} #nextAyahBtn{grid-area:next}
     #curTime{grid-area:start} #seek{grid-area:seek} #totTime{grid-area:end}
   }
@@ -1573,7 +1573,87 @@
   .settings-advanced { margin-top:10px; border-top:1px solid var(--border); padding-top:8px; }
   .settings-advanced > summary { cursor:pointer; color:var(--text-muted); font:600 13px system-ui,sans-serif; padding:4px 0; }
   .settings-advanced[open] > summary { color:var(--accent); margin-bottom:6px; }
+
+  /* ===== Experience layer: decluttered top, page arrows/swipe, player extras, full screen ===== */
+  /* Top: one bar (menu · surah · full screen · settings) and one row (view switch · verse actions). */
+  #readerHeader .brand, #readerHeading .reader-ar-title, #readerHeading #readerChapterName,
+  #readerHeading #readerChapterMeta { display:none !important; }
+  #readerHeading { border:0 !important; padding:0 !important; min-height:0 !important; }
+  #readerHeading:not(:has(#readerNotice:not(:empty))) { display:none !important; }
+  #readerModeBar { justify-content:space-between !important; flex-wrap:wrap; gap:6px; }
+  #readerModeBar .reader-actions { display:flex; flex-wrap:nowrap !important; flex-shrink:0; align-items:center; gap:4px; margin-left:auto; }
+  #readerModeBar .view-switch { flex-shrink:1; min-width:0; }
+  #readerModeBar .reader-icon { width:28px; height:28px; font-size:13px; }
+  #readerModeBar { flex-wrap:nowrap !important; }
+  @media(max-width:480px){
+    #readerModeBar { gap:4px !important; }
+    .view-switch { padding:1px; gap:0; }
+    .view-switch button { padding:4px 7px; font-size:12px; }
+    #readerModeBar .reader-actions { gap:2px; }
+    #readerModeBar .reader-icon { width:25px; height:25px; font-size:12px; }
+  }
+  @media(max-width:360px){ #readerInfoToggle { display:none; } }
+  .xp-row-btn { border:1px solid var(--border); background:transparent; color:var(--text); border-radius:8px; padding:4px 10px; font:13px system-ui,sans-serif; cursor:pointer; }
+  /* Pager: the page label stays as an indicator; paging happens with the floating arrows and swipes. */
+  .page-nav.visible #pagePrev, .page-nav.visible #pageNext { display:none !important; }
+  .page-float { position:fixed; top:50%; transform:translateY(-50%); z-index:28; width:40px; height:64px; border-radius:12px;
+    border:1px solid color-mix(in srgb, var(--border) 80%, transparent); background:color-mix(in srgb, var(--surface, var(--bg)) 82%, transparent);
+    color:var(--accent); font:28px/1 system-ui,sans-serif; cursor:pointer; display:none; place-items:center; backdrop-filter:blur(6px);
+    box-shadow:0 2px 10px #0000001a; opacity:.75; transition:opacity .15s; }
+  .page-float:hover, .page-float:focus-visible { opacity:1; }
+  .page-float:disabled { opacity:.2; cursor:default; }
+  body.xp-paging .page-float { display:grid; }
+  /* Horizontal swipes on the page are page turns; vertical scrolling and pinch-zoom stay native. */
+  body.xp-paging .mushaf-pages { touch-action:pan-y pinch-zoom; }
+  .page-float.next { left:max(8px, calc(var(--xp-content-left, 0px) - 52px)); }   /* RTL mushaf: next page is to the left */
+  .page-float.prev { right:8px; }
+  @media(max-width:899px){ .page-float{ width:34px; height:54px; font-size:24px; opacity:.55; } }
+  /* Player extras: loading spinner, repeat / sleep menu. */
+  .play-btn.is-loading { position:relative; color:transparent !important; }
+  .play-btn.is-loading::after { content:""; position:absolute; inset:9px; border-radius:50%; border:3px solid #fff; border-right-color:transparent; animation:xpSpin .8s linear infinite; }
+  @keyframes xpSpin { to { transform:rotate(360deg); } }
+  #xpMenuBtn { border:0; background:transparent; color:var(--text-muted); font:17px/1 system-ui,sans-serif; width:30px; height:30px; border-radius:50%; cursor:pointer; }
+  #xpMenuBtn.active { color:var(--accent); background:var(--accent-soft); }
+  .xp-menu { position:fixed; z-index:60; bottom:calc(var(--reader-bottom-inset, 64px) + 8px); left:50%; transform:translateX(-50%); width:min(340px, calc(100vw - 24px));
+    background:var(--surface, var(--bg)); color:var(--text); border:1px solid var(--border); border-radius:14px; box-shadow:0 10px 30px #00000029; padding:12px 14px; font:13px system-ui,sans-serif; }
+  .xp-menu[hidden] { display:none; }
+  .xp-menu h3 { margin:6px 0; font:600 12px system-ui,sans-serif; color:var(--text-muted); text-transform:uppercase; letter-spacing:.05em; }
+  .xp-chips { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px; }
+  .xp-chips button { border:1px solid var(--border); background:transparent; color:var(--text); border-radius:999px; padding:4px 10px; cursor:pointer; font:13px system-ui,sans-serif; }
+  .xp-chips button[aria-pressed="true"] { background:var(--accent-soft); color:var(--accent); border-color:var(--accent); }
+  .xp-range { display:flex; align-items:center; gap:6px; margin-bottom:8px; }
+  .xp-range input { width:58px; }
+  .xp-status { color:var(--text-muted); font-size:12px; min-height:16px; }
+  /* Toasts, continue card, error help. */
+  .xp-toast, .xp-card { position:fixed; z-index:55; left:50%; transform:translateX(-50%); bottom:calc(var(--reader-bottom-inset, 64px) + 10px);
+    background:var(--surface, var(--bg)); color:var(--text); border:1px solid var(--border); border-radius:12px; box-shadow:0 8px 24px #00000024;
+    padding:9px 12px; font:13px system-ui,sans-serif; display:flex; align-items:center; gap:10px; max-width:calc(100vw - 24px); }
+  .xp-card[hidden], .xp-toast[hidden] { display:none; }
+  .xp-card strong { font-weight:650; }
+  .xp-card .xp-go { border:0; background:var(--accent); color:#fff; border-radius:999px; width:32px; height:32px; cursor:pointer; font-size:14px; }
+  .xp-card .xp-x { border:0; background:transparent; color:var(--text-muted); cursor:pointer; font-size:16px; }
+  .xp-help { display:flex; flex-wrap:wrap; justify-content:center; gap:8px; margin:4px auto 6px; font:13px system-ui,sans-serif; }
+  .xp-help[hidden] { display:none; }
+  /* Ayahs that play without word highlighting carry a muted number. */
+  .untimed { opacity:.45; filter:grayscale(1); }
+  /* Full-screen reading: everything but the Quran text hides; a small play and exit stay. */
+  body.immersive #readerHeader, body.immersive #readerModeBar, body.immersive #readerHeading, body.immersive .page-nav,
+  body.immersive .controls, body.immersive #readerSidebar, body.immersive #readerShade, body.immersive .load-status { display:none !important; }
+  body.immersive { padding-top:12px !important; }
+  /* The new controls read left to right even though the page is right to left. */
+  .xp-menu, .xp-toast, .xp-card, .xp-help, .page-float, .xp-immersive-bar { direction:ltr; }
+  #xpMenuBtn { grid-area:menu; }
+  @media(max-width:899px){ .page-float { width:26px; height:48px; font-size:20px; opacity:.45; border-radius:8px; }
+    .page-float.next { left:2px; } .page-float.prev { right:2px; } }
+  .xp-immersive-bar { position:fixed; z-index:60; right:12px; bottom:14px; display:none; gap:8px; }
+  body.immersive .xp-immersive-bar { display:flex; }
+  .xp-immersive-bar button { width:42px; height:42px; border-radius:50%; border:1px solid var(--border); background:color-mix(in srgb, var(--surface, var(--bg)) 88%, transparent);
+    color:var(--text); font:17px/1 system-ui,sans-serif; cursor:pointer; box-shadow:0 2px 10px #0000002a; opacity:.8; }
+  #xpImmersiveBtn { font-size:16px; }
 </style>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0e7c86">
+<link rel="apple-touch-icon" href="icon-192.png">
 </head>
 <body>
 
@@ -1590,6 +1670,7 @@
     </select>
     <select id="surahSelect" aria-label="Surah"></select>
     <select id="juzSelect" style="display:none" title="Juz" aria-label="Juz"></select>
+    <button type="button" class="chrome-icon-btn" id="xpImmersiveBtn" title="Full-screen reading" aria-label="Full-screen reading">&#x26F6;</button>
     <button type="button" class="chrome-icon-btn chrome-more-btn" id="chromeMoreBtn" title="Settings" aria-label="Settings" aria-expanded="false" aria-controls="chromeMore">&#9881;</button>
     <button type="button" class="chrome-icon-btn theme-toggle" id="themeToggle" title="Toggle light/dark" aria-label="Toggle light/dark theme">&#9789;</button>
   </div>
@@ -3216,6 +3297,7 @@ function renderVerse(v, idx) {
   pin.className = 'ayah-pin';
   pin.textContent = toArabicDigits(v.ayah);
   textEl.appendChild(pin);
+  readerTagAyahMarker(pin,v);
 
   div.appendChild(textEl);
   div.addEventListener('click', () => jumpToVerse(idx));
@@ -3429,6 +3511,7 @@ function renderMushafPages() {
           numSpan.className = 'mushaf-num-glyph';
           numSpan.textContent = numGlyph;
           lineDiv.appendChild(numSpan);
+          readerTagAyahMarker(numSpan,v);
         }
       } else if (lineDiv) {
         // Letter/Word hybrid + Unicode layouts: circled ayah pin.
@@ -3436,6 +3519,7 @@ function renderMushafPages() {
         pin.className = 'ayah-pin';
         pin.textContent = toArabicDigits(v.ayah);
         lineDiv.appendChild(pin);
+        readerTagAyahMarker(pin,v);
       }
       if (v.sajda && lineDiv) {
         const badge = document.createElement('span');
@@ -4339,6 +4423,8 @@ function readerAdvancePlayback(ended){
   const v=VERSES[currentVerseIdx];
   if(!v||v.audio!==currentAudioKey||!readerAudioMatches(v.audio))return;
   if(!ended&&(v.clipRelative||audio.currentTime*1000<Number(v.source_offset_ms)+Number(v.duration_ms)))return;
+  // Repeat / loop range / sleep timer decide first what happens at the end of an ayah.
+  if(typeof readerEndOfAyahHook==='function'&&readerEndOfAyahHook(currentVerseIdx))return;
   // Skip ayahs that have no verified audio instead of stopping on them. Inside one
   // continuous recording (a juz file) the audio simply plays on through the
   // unhighlighted ayah until the clock reaches the next aligned one.
@@ -4629,6 +4715,10 @@ document.addEventListener('visibilitychange', () => {
 function readerReadingIdx() {
   if (!audio.paused || pendingAudioSeek) return currentVerseIdx;
   const top = (document.getElementById('readerModeBar')?.getBoundingClientRect().bottom || 0) + 4;
+  const onScreen = el => { const r = el.getBoundingClientRect(); return r.bottom > top && r.top < innerHeight && r.width; };
+  // The ayah you selected wins while it is on screen; only scrolling it away moves the saved position.
+  const cur = VERSES[currentVerseIdx];
+  if (cur && [...document.querySelectorAll(`[data-surah="${cur.surah}"][data-ayah="${cur.ayah}"]`)].some(onScreen)) return currentVerseIdx;
   for (const el of document.querySelectorAll('[data-ayah][data-surah]')) {
     const r = el.getBoundingClientRect();
     if (r.bottom > top && r.top < innerHeight && r.width) {
@@ -5180,7 +5270,7 @@ seek.addEventListener('click', () => { if (browsing) exitBrowse(); });
         ar.append(readerGlossEnabled?readerGlossWord(v,wi,word):word,document.createTextNode(' '));
       }
       if(!(v.qusxWords||[]).length)ar.append(document.createTextNode(v.text||''));
-      ar.append(readerEl('span','ayah-pin',toArabicDigits(v.ayah)));
+      {const pinEl=readerEl('span','ayah-pin',toArabicDigits(v.ayah));readerTagAyahMarker(pinEl,v);ar.append(pinEl);}
       const tr=readerEl('p','qv-translation','Loading translation…');tr.lang='en';tr.dir='ltr';
       const credit=readerEl('small','qv-credit');
       content.append(ar,tr,credit);row.append(actions,content);frag.append(row);
@@ -5341,6 +5431,345 @@ if(typeof ResizeObserver==='function'){
     readerLastLocation='';readerSync(currentVerseIdx);readerNav();
   }
 })();
+
+// ===== Experience layer ==============================================================
+// Built on the reader's own functions (jumpToVerse, seekVerseStart, goMushafPage, ...); the
+// playback and highlighting code underneath is unchanged.
+
+// Ayah number markers know their ayah; ones that play without word highlighting are muted.
+function readerTagAyahMarker(el, v) {
+  if (!el || !v) return;
+  el.dataset.surah = v.surah; el.dataset.ayah = v.ayah;
+  const untimed = !v.audio || v.alignmentVerified === false;
+  el.classList.toggle('untimed', untimed);
+  if (untimed) el.title = 'This ayah plays without word-by-word highlighting';
+}
+
+// --- repeat / loop range / sleep timer ----------------------------------------------
+const xpState = {
+  repeat: Number(localStorage.getItem('qusx-repeat') || 0),   // 0 off, n = play each ayah n times, -1 = forever
+  range: null,                                                 // {surah, from, to}
+  sleep: null,                                                 // 'surah' | {until, minutes}
+  plays: 0, playsIdx: -1, sleepTimer: 0,
+};
+function xpToast(text, ms = 3500) {
+  let t = document.getElementById('xpToast');
+  if (!t) { t = document.createElement('div'); t.id = 'xpToast'; t.className = 'xp-toast'; t.setAttribute('role', 'status'); document.body.append(t); }
+  t.textContent = text; t.hidden = false;
+  clearTimeout(t._h); t._h = setTimeout(() => { t.hidden = true; }, ms);
+}
+// The rules run at the end of an ayah. The reader calls readerEndOfAyahHook when a clip ends or the
+// clock passes the ayah's end; inside one continuous juz recording it may instead just move on to the
+// next ayah by time, so a watcher applies the same rules on that natural hand-over.
+let xpPrevIdx = -1, xpGuardUntil = 0;
+setInterval(() => {
+  if (audio.paused || pendingAudioSeek || readerLoading) { xpPrevIdx = currentVerseIdx; return; }
+  const cur = currentVerseIdx;
+  // act just before the current ayah ends, so the next ayah is not heard at all
+  const v = VERSES[cur];
+  if (v && !v.clipRelative && (xpState.repeat || xpState.range || xpState.sleep === 'surah') && Date.now() > xpGuardUntil
+      && audio.currentTime * 1000 >= Number(v.source_offset_ms) + Number(v.duration_ms) - 90) {
+    if (readerEndOfAyahHook(cur)) { xpGuardUntil = Date.now() + 400; xpPrevIdx = -1; return; }
+    xpGuardUntil = Date.now() + 400;  // no rule applied: let playback carry on into the next ayah
+  }
+  if (cur === xpPrevIdx) return;
+  const a = xpPrevIdx; xpPrevIdx = cur;
+  if (a >= 0 && cur === a + 1 && Date.now() > xpGuardUntil && readerEndOfAyahHook(a)) xpGuardUntil = Date.now() + 400;
+}, 60);
+// One decision per ayah ending: the early check, the hand-over watcher and the reader's own hook can
+// all ask about the same ending, and must get the same answer without counting the play twice.
+// A play-through ends once; replaying the ayah (the clock jumping back) starts a new play-through.
+let xpLastEnd = { idx: -1, pass: -1, decision: false }, xpPass = 0, xpLastClock = 0;
+setInterval(() => { if (audio.currentTime + 0.3 < xpLastClock) xpPass++; xpLastClock = audio.currentTime; }, 40);
+function readerEndOfAyahHook(idx) {
+  if (audio.currentTime + 0.3 < xpLastClock) { xpPass++; xpLastClock = audio.currentTime; }
+  if (xpLastEnd.idx === idx && xpLastEnd.pass === xpPass) return xpLastEnd.decision;
+  const decision = xpDecideEndOfAyah(idx);
+  xpLastEnd = { idx, pass: xpPass, decision };
+  return decision;
+}
+function xpDecideEndOfAyah(idx) {
+  const v = VERSES[idx];
+  if (!v) return false;
+  if (xpState.playsIdx !== idx) { xpState.playsIdx = idx; xpState.plays = 0; }
+  xpState.plays++;
+  // repeat this ayah
+  if (xpState.repeat === -1 || (xpState.repeat > 1 && xpState.plays < xpState.repeat)) {
+    seekVerseStart(idx, true); return true;
+  }
+  xpState.plays = 0; xpState.playsIdx = -1;
+  // loop a range: after its last ayah, go back to its first
+  const r = xpState.range;
+  if (r && v.surah === r.surah && v.ayah >= r.to) {
+    const start = findVerseIdx(r.surah, r.from);
+    if (start >= 0) { seekVerseStart(start, true); return true; }
+  }
+  // sleep at the end of the surah
+  if (xpState.sleep === 'surah') {
+    const next = VERSES[idx + 1];
+    if (!next || next.surah !== v.surah) { audio.pause(); xpSetSleep(null); xpToast('Stopped at the end of the surah'); return true; }
+  }
+  return false;
+}
+function xpSetSleep(mode) {
+  clearTimeout(xpState.sleepTimer); xpState.sleep = null;
+  if (mode === 'surah') xpState.sleep = 'surah';
+  else if (Number(mode) > 0) {
+    const minutes = Number(mode);
+    xpState.sleep = { until: Date.now() + minutes * 60000, minutes };
+    xpState.sleepTimer = setTimeout(() => { audio.pause(); xpSetSleep(null); xpToast('Sleep timer: recitation stopped'); }, minutes * 60000);
+  }
+  if (typeof xpRenderMenu === 'function') xpRenderMenu();
+}
+
+// --- player menu (repeat, loop, sleep) ------------------------------------------------
+const xpMenuBtn = document.createElement('button');
+xpMenuBtn.id = 'xpMenuBtn'; xpMenuBtn.type = 'button'; xpMenuBtn.title = 'Repeat, loop and sleep timer';
+xpMenuBtn.setAttribute('aria-label', 'Repeat, loop and sleep timer'); xpMenuBtn.textContent = '🔁';
+nextAyahBtn.after(xpMenuBtn);
+const xpMenu = document.createElement('div');
+xpMenu.className = 'xp-menu'; xpMenu.id = 'xpMenu'; xpMenu.hidden = true;
+xpMenu.setAttribute('role', 'dialog'); xpMenu.setAttribute('aria-label', 'Repeat, loop and sleep timer');
+xpMenu.innerHTML =
+  '<h3>Repeat each ayah</h3><div class="xp-chips" data-k="repeat">' +
+    '<button data-v="0">Off</button><button data-v="2">2×</button><button data-v="3">3×</button><button data-v="5">5×</button><button data-v="-1">∞</button></div>' +
+  '<h3>Loop ayahs</h3><div class="xp-range">' +
+    '<label>from <input type="number" id="xpFrom" min="1"></label><label>to <input type="number" id="xpTo" min="1"></label>' +
+    '<button class="xp-row-btn" id="xpLoopBtn">Loop</button></div>' +
+  '<h3>Sleep timer</h3><div class="xp-chips" data-k="sleep">' +
+    '<button data-v="">Off</button><button data-v="surah">End of surah</button><button data-v="15">15 min</button><button data-v="30">30 min</button><button data-v="60">60 min</button></div>' +
+  '<div class="xp-status" id="xpStatus"></div>';
+document.body.append(xpMenu);
+function xpRenderMenu() {
+  for (const b of xpMenu.querySelectorAll('[data-k="repeat"] button')) b.setAttribute('aria-pressed', String(Number(b.dataset.v) === xpState.repeat));
+  for (const b of xpMenu.querySelectorAll('[data-k="sleep"] button')) {
+    const v = b.dataset.v;
+    const on = v === '' ? !xpState.sleep : v === 'surah' ? xpState.sleep === 'surah' : !!(xpState.sleep && xpState.sleep.minutes === Number(v));
+    b.setAttribute('aria-pressed', String(on));
+  }
+  const r = xpState.range, parts = [];
+  if (xpState.repeat) parts.push('Repeat ' + (xpState.repeat === -1 ? 'forever' : xpState.repeat + '×'));
+  if (r) parts.push('Looping ' + r.surah + ':' + r.from + '–' + r.to);
+  if (xpState.sleep === 'surah') parts.push('Stops at end of surah');
+  else if (xpState.sleep) parts.push('Stops in ' + Math.max(1, Math.round((xpState.sleep.until - Date.now()) / 60000)) + ' min');
+  document.getElementById('xpStatus').textContent = parts.join(' · ');
+  document.getElementById('xpLoopBtn').textContent = xpState.range ? 'Stop loop' : 'Loop';
+  xpMenuBtn.classList.toggle('active', !!(xpState.repeat || r || xpState.sleep));
+}
+xpMenu.addEventListener('click', e => {
+  const b = e.target.closest('.xp-chips button'); if (!b) return;
+  const k = b.parentElement.dataset.k;
+  if (k === 'repeat') { xpState.repeat = Number(b.dataset.v); localStorage.setItem('qusx-repeat', String(xpState.repeat)); xpState.plays = 0; }
+  if (k === 'sleep') xpSetSleep(b.dataset.v === '' ? null : b.dataset.v === 'surah' ? 'surah' : Number(b.dataset.v));
+  xpRenderMenu();
+});
+document.getElementById('xpLoopBtn').addEventListener('click', () => {
+  if (xpState.range) { xpState.range = null; xpRenderMenu(); return; }
+  const v = VERSES[currentVerseIdx]; if (!v) return;
+  const count = (SURAH_INDEX.find(s => s.num === v.surah) || {}).ayahCount || 286;
+  let from = Number(document.getElementById('xpFrom').value) || v.ayah;
+  let to = Number(document.getElementById('xpTo').value) || from;
+  from = Math.min(Math.max(1, from), count); to = Math.min(Math.max(from, to), count);
+  xpState.range = { surah: v.surah, from, to };
+  xpRenderMenu();
+  if (v.ayah < from || v.ayah > to) { const i = findVerseIdx(v.surah, from); if (i >= 0) seekVerseStart(i, true); }
+});
+xpMenuBtn.addEventListener('click', e => {
+  e.stopPropagation();
+  const open = xpMenu.hidden;
+  if (open) {
+    const v = VERSES[currentVerseIdx];
+    if (v) { document.getElementById('xpFrom').value = xpState.range ? xpState.range.from : v.ayah; document.getElementById('xpTo').value = xpState.range ? xpState.range.to : v.ayah; }
+    xpRenderMenu();
+  }
+  xpMenu.hidden = !open;
+});
+document.addEventListener('click', e => { if (!xpMenu.hidden && !xpMenu.contains(e.target) && e.target !== xpMenuBtn) xpMenu.hidden = true; });
+xpRenderMenu();
+
+// --- loading spinner and next-recording preload ------------------------------------
+const xpPreloaded = new Set(); let xpPreloadAudio = null;
+setInterval(() => {
+  const loading = (!!pendingAudioSeek && pendingAudioSeek.autoplay) || (!audio.paused && audio.readyState < 3);
+  playBtn.classList.toggle('is-loading', !!loading);
+  // warm the next juz/para recording near the end of the current one, so the hand-over starts at once
+  if (isLocalReciter() && LOCAL_MANIFEST && !audio.paused && audio.duration > 0 && audio.currentTime / audio.duration > 0.85) {
+    const cur = VERSES[currentVerseIdx], tracks = LOCAL_MANIFEST.tracks || [];
+    const juz = cur ? Number(cur.localJuz != null ? cur.localJuz : cur.juz) : NaN;
+    const i = tracks.findIndex(t => Number(t.juz) === juz);
+    const next = i >= 0 ? tracks[i + 1] : null;
+    if (next && next.audio && !xpPreloaded.has(next.audio)) {
+      xpPreloaded.add(next.audio);
+      xpPreloadAudio = new Audio(); xpPreloadAudio.preload = 'auto'; xpPreloadAudio.muted = true; xpPreloadAudio.src = next.audio;
+    }
+  }
+}, 250);
+
+// --- audio errors: say what happened and offer something to do ---------------------
+const xpHelp = document.createElement('div');
+xpHelp.className = 'xp-help'; xpHelp.hidden = true;
+loadStatusEl.after(xpHelp);
+function xpOtherReciter() {
+  return RECITERS.find(r => String(r[0]).startsWith('local_') && r[0] !== RECITER_CONFIG)
+      || RECITERS.find(r => !String(r[0]).startsWith('local_'));
+}
+new MutationObserver(() => {
+  const err = loadStatusEl.classList.contains('error') && /audio|recording|recitation|seek/i.test(loadStatusEl.textContent);
+  if (!err) { xpHelp.hidden = true; return; }
+  if (!xpHelp.hidden) return;
+  const other = xpOtherReciter();
+  xpHelp.replaceChildren();
+  const retry = document.createElement('button'); retry.className = 'xp-row-btn'; retry.textContent = 'Try again';
+  retry.onclick = () => { loadStatusEl.classList.remove('error'); loadStatusEl.textContent = ''; xpHelp.hidden = true; jumpToVerse(Math.max(0, currentVerseIdx), true); };
+  xpHelp.append(retry);
+  if (other) {
+    const sw = document.createElement('button'); sw.className = 'xp-row-btn'; sw.textContent = 'Listen to ' + other[1] + ' instead';
+    sw.onclick = () => { xpHelp.hidden = true; loadStatusEl.classList.remove('error'); reciterSelect.value = other[0]; reciterSelect.dispatchEvent(new Event('change')); };
+    xpHelp.append(sw);
+  }
+  xpHelp.hidden = false;
+}).observe(loadStatusEl, { childList: true, characterData: true, subtree: true, attributes: true, attributeFilter: ['class'] });
+
+// --- continue card -------------------------------------------------------------------
+(function () {
+  const card = document.createElement('div');
+  card.className = 'xp-card'; card.id = 'xpContinue'; card.hidden = true; card.setAttribute('role', 'status');
+  document.body.append(card);
+  let shown = false;
+  new MutationObserver(() => {
+    const m = /^Resumed (\d+):(\d+)/.exec(loadStatusEl.textContent || '');
+    if (!m || shown) return;
+    shown = true;
+    const s = SURAH_INDEX.find(x => x.num === Number(m[1]));
+    const rec = (RECITERS.find(r => r[0] === RECITER_CONFIG) || ['', ''])[1];
+    const label = document.createElement('span');
+    label.append('Continue ');
+    const strong = document.createElement('strong'); strong.textContent = (s ? s.name : 'Surah') + ' ' + m[1] + ':' + m[2];
+    label.append(strong, rec ? ' · ' + rec : '');
+    const go = document.createElement('button'); go.className = 'xp-go'; go.textContent = '▶'; go.setAttribute('aria-label', 'Continue listening');
+    go.onclick = () => { card.hidden = true; if (audio.paused) playBtn.click(); };
+    const x = document.createElement('button'); x.className = 'xp-x'; x.textContent = '✕'; x.setAttribute('aria-label', 'Dismiss');
+    x.onclick = () => { card.hidden = true; };
+    card.replaceChildren(label, go, x); card.hidden = false;
+    setTimeout(() => { card.hidden = true; }, 12000);
+    audio.addEventListener('play', () => { card.hidden = true; }, { once: true });
+  }).observe(loadStatusEl, { childList: true, characterData: true, subtree: true });
+})();
+
+// --- one-time hint: tap a word to play from it --------------------------------------
+audio.addEventListener('playing', () => {
+  if (localStorage.getItem('qusx-hint-tapword') || document.body.classList.contains('reader-translation')) return;
+  localStorage.setItem('qusx-hint-tapword', '1');
+  setTimeout(() => xpToast('Tip: tap any word to recite from there', 5000), 1500);
+});
+
+// --- page arrows and swipe (mushaf page-by-page view) --------------------------------
+const xpNextPage = document.createElement('button'), xpPrevPage = document.createElement('button');
+xpNextPage.className = 'page-float next'; xpNextPage.type = 'button'; xpNextPage.textContent = '‹'; xpNextPage.setAttribute('aria-label', 'Next page');
+xpPrevPage.className = 'page-float prev'; xpPrevPage.type = 'button'; xpPrevPage.textContent = '›'; xpPrevPage.setAttribute('aria-label', 'Previous page');
+document.body.append(xpNextPage, xpPrevPage);
+xpNextPage.onclick = () => goMushafPage(1);
+xpPrevPage.onclick = () => goMushafPage(-1);
+function xpSyncPaging() {
+  const on = pageViewMode === 'page' && mushafPageCount > 0 && !document.body.classList.contains('reader-translation') && !document.body.classList.contains('immersive');
+  document.body.classList.toggle('xp-paging', on);
+  if (!on) return;
+  xpPrevPage.disabled = currentPageIdx <= 0 && !(isLocalReciter() || currentSurah > 1);
+  const left = mushafPagesEl.getBoundingClientRect().left;
+  document.documentElement.style.setProperty('--xp-content-left', Math.max(60, left) + 'px');
+}
+setInterval(xpSyncPaging, 400); window.addEventListener('resize', xpSyncPaging);
+(function () {  // swipe anywhere on the reading area: finger moving right = next page (Arabic mushaf pages turn that way)
+  let x0 = 0, y0 = 0, t0 = 0, active = false;
+  const chrome = '#readerHeader, #readerModeBar, .controls, #readerSidebar, .xp-menu, .xp-card, .word-inspector, .page-float, .xp-immersive-bar, input, select, button';
+  document.addEventListener('touchstart', e => {
+    if (e.touches.length !== 1 || pageViewMode !== 'page' || document.body.classList.contains('reader-translation')
+        || (e.target.closest && e.target.closest(chrome))) { active = false; return; }
+    active = true; x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; t0 = Date.now();
+  }, { passive: true });
+  let x1 = 0, y1 = 0;
+  document.addEventListener('touchmove', e => { if (active && e.touches[0]) { x1 = e.touches[0].clientX; y1 = e.touches[0].clientY; } }, { passive: true });
+  const finish = (x, y) => {
+    if (!active) return; active = false;
+    const dx = x - x0, dy = y - y0;
+    if (Date.now() - t0 > 1000 || Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+    goMushafPage(dx > 0 ? 1 : -1);
+  };
+  document.addEventListener('touchstart', e => { if (e.touches[0]) { x1 = e.touches[0].clientX; y1 = e.touches[0].clientY; } }, { passive: true });
+  document.addEventListener('touchend', e => { const t = e.changedTouches[0]; finish(t ? t.clientX : x1, t ? t.clientY : y1); }, { passive: true });
+  document.addEventListener('touchcancel', () => finish(x1, y1), { passive: true });  // browser took over the gesture
+})();
+document.addEventListener('keydown', e => {
+  if ((e.target.closest && e.target.closest('input, select, textarea')) || e.altKey || e.ctrlKey || e.metaKey) return;
+  if (e.key === 'Escape' && document.body.classList.contains('immersive')) xpSetImmersive(false);
+  if (pageViewMode !== 'page' || document.body.classList.contains('reader-translation')) return;
+  if (e.key === 'ArrowLeft') { goMushafPage(1); e.preventDefault(); }
+  if (e.key === 'ArrowRight') { goMushafPage(-1); e.preventDefault(); }
+});
+
+// --- declutter: verse actions join the view row; theme moves into settings -----------
+(function () {
+  const actions = document.querySelector('#readerHeading .reader-actions');
+  const bar = document.getElementById('readerModeBar');
+  if (actions && bar) bar.append(actions);
+  const theme = document.getElementById('themeToggle'), panel = document.getElementById('chromeMore');
+  if (theme && panel) {
+    const row = document.createElement('div'); row.className = 'chrome-more-row';
+    const label = document.createElement('label'); label.textContent = 'Theme'; label.htmlFor = 'themeToggle';
+    row.append(label, theme);
+    const first = panel.querySelector('.chrome-more-row');
+    if (first) first.after(row); else panel.append(row);
+  }
+})();
+
+// --- full-screen reading --------------------------------------------------------------
+const xpBar = document.createElement('div'); xpBar.className = 'xp-immersive-bar';
+const xpBarPlay = document.createElement('button'); xpBarPlay.setAttribute('aria-label', 'Play or pause');
+const xpBarExit = document.createElement('button'); xpBarExit.textContent = '✕'; xpBarExit.setAttribute('aria-label', 'Exit full-screen reading');
+xpBar.append(xpBarPlay, xpBarExit); document.body.append(xpBar);
+const xpSyncBarPlay = () => { xpBarPlay.textContent = audio.paused ? '▶' : '❚❚'; };
+audio.addEventListener('play', xpSyncBarPlay); audio.addEventListener('pause', xpSyncBarPlay); xpSyncBarPlay();
+xpBarPlay.onclick = () => playBtn.click();
+function xpSetImmersive(on) {
+  document.body.classList.toggle('immersive', on);
+  try {
+    if (on && document.documentElement.requestFullscreen && !document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {});
+    if (!on && document.fullscreenElement) document.exitFullscreen().catch(() => {});
+  } catch (_) {}
+  xpSyncPaging();
+}
+document.getElementById('xpImmersiveBtn').onclick = () => xpSetImmersive(true);
+xpBarExit.onclick = () => xpSetImmersive(false);
+document.addEventListener('fullscreenchange', () => { if (!document.fullscreenElement && document.body.classList.contains('immersive')) xpSetImmersive(false); });
+
+// --- lock-screen / notification controls (Media Session) -----------------------------
+if ('mediaSession' in navigator) {
+  const ms = navigator.mediaSession;
+  const safe = (a, f) => { try { ms.setActionHandler(a, f); } catch (_) {} };
+  safe('play', () => { if (audio.paused) playBtn.click(); });
+  safe('pause', () => audio.pause());
+  safe('previoustrack', () => prevAyahBtn.click());
+  safe('nexttrack', () => nextAyahBtn.click());
+  let last = '';
+  setInterval(() => {
+    const v = VERSES[currentVerseIdx]; if (!v) return;
+    const key = RECITER_CONFIG + v.surah + ':' + v.ayah;
+    if (key === last) return; last = key;
+    const s = SURAH_INDEX.find(x => x.num === v.surah);
+    const rec = (RECITERS.find(r => r[0] === RECITER_CONFIG) || ['', ''])[1];
+    try {
+      ms.metadata = new MediaMetadata({ title: (s ? s.name + ' · ' : '') + v.surah + ':' + v.ayah, artist: rec, album: s ? s.nameArabic : 'Quran',
+        artwork: [{ src: 'icon-192.png', sizes: '192x192', type: 'image/png' }, { src: 'icon-512.png', sizes: '512x512', type: 'image/png' }] });
+    } catch (_) {}
+  }, 1000);
+  audio.addEventListener('play', () => { ms.playbackState = 'playing'; });
+  audio.addEventListener('pause', () => { ms.playbackState = 'paused'; });
+}
+
+// --- installable app (offline shell) --------------------------------------------------
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+}
 </script>
 </body>
 </html>

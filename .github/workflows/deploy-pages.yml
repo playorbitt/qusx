@@ -21,7 +21,7 @@ jobs:
       - name: Collect site files
         run: |
           mkdir -p dist/local_alhadr dist/local_para
-          cp index.html dist/
+          cp index.html manifest.webmanifest sw.js icon-192.png icon-512.png dist/
           for f in *.json; do case "$f" in package*.json) ;; *) cp "$f" dist/ ;; esac; done
           cp local_alhadr/manifest.json dist/local_alhadr/
           cp local_para/manifest.json dist/local_para/
