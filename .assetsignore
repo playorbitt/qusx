@@ -1,0 +1,16 @@
+# Upload only the site files (same set as .github/workflows/deploy-pages.yml).
+*
+!index.html
+!manifest.webmanifest
+!sw.js
+!icon-192.png
+!icon-512.png
+!*.json
+package.json
+package-lock.json
+!local_alhadr/
+local_alhadr/*
+!local_alhadr/manifest.json
+!local_para/
+local_para/*
+!local_para/manifest.json
