@@ -1538,6 +1538,14 @@
   body:not(.reader-translation) .mushaf-text { width:fit-content; max-width:100%; margin-inline:auto; }
   .mushaf-line.is-short { justify-content:center !important; }
   body:not(.reader-translation) .mushaf-text .mushaf-line { justify-content:center; }
+  /* Pages 1 and 2 (Al-Fatiha, opening of Al-Baqarah) are set like the printed mushaf: their short
+     block of verses sits in the vertical middle of a full page, with equal space above and below. */
+  body:not(.reader-translation) .mushaf-page:is([data-page-num="1"],[data-page-num="2"]) {
+    min-height:calc(100dvh - var(--reader-top-inset) - var(--reader-bottom-inset) - 96px);
+    flex-direction:column; justify-content:center;
+  }
+  body:not(.reader-translation) .mushaf-pages:not(.page-mode) .mushaf-page:is([data-page-num="1"],[data-page-num="2"]),
+  body:not(.reader-translation) .mushaf-pages.page-mode .mushaf-page.is-visible:is([data-page-num="1"],[data-page-num="2"]) { display:flex; }
   /* Desktop with the navigation sidebar open: the player spans only the reading area, not under the sidebar. */
   @media(min-width:900px){
     body.reader-nav-open .controls { left:calc(50% + var(--reader-nav) / 2) !important; width:calc(100% - var(--reader-nav)) !important; }
