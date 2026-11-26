@@ -4667,12 +4667,24 @@ function readerStartHighlightClock(){
   const tick=now=>{
     readerHighlightFrame=0;
     if(audio.paused||audio.ended||document.hidden)return;
-    if(now-readerHighlightLastFrame>=40){readerHighlightLastFrame=now;updateHighlight();}
+    if(now-readerHighlightLastFrame>=40){readerHighlightLastFrame=now;if(!readerSkipAds())updateHighlight();}
     if(!audio.paused&&!audio.ended&&!document.hidden&&!readerHighlightFrame)readerHighlightFrame=requestAnimationFrame(tick);
   };
   readerHighlightFrame=requestAnimationFrame(tick);
 }
+// Some recordings (the Para pack) carry ads inside the audio. The manifest lists them per track as
+// skip:[[startSec,endSec],...]; playback jumps past them so they never play. The audio itself is untouched.
+function readerTrackKey(u){return decodeURIComponent(String(u||'').split(/[?#]/)[0].split('/').pop()).replace(/\.[^.]+$/,'');}
+function readerSkipAds(){
+  const tracks=LOCAL_MANIFEST?.tracks;if(!tracks||!isLocalReciter())return false;
+  const k=readerTrackKey(audio.currentSrc||audio.src);if(!k)return false;
+  const t=tracks.find(t=>t.skip&&readerTrackKey(t.audio)===k);if(!t)return false;
+  const ct=audio.currentTime;
+  for(const [a,b] of t.skip)if(ct>=a&&ct<b-0.05){audio.currentTime=b;return true;}
+  return false;
+}
 audio.addEventListener('timeupdate', () => {
+  if(readerSkipAds())return;
   updateHighlight();
   if (audio.duration && !userSeeking) {
     seek.value = (audio.currentTime / audio.duration) * 1000;
@@ -4698,7 +4710,7 @@ audio.addEventListener('ended',()=>{
   const singleWord=!!tapFrameId;cancelTapWordStop();
   updateHighlight();playBtn.innerHTML='&#9658;';saveResumeState();if(!singleWord)readerAdvancePlayback(true);
 });
-audio.addEventListener('seeked',()=>{lastScrollKey='';updateHighlight();});
+audio.addEventListener('seeked',()=>{if(readerSkipAds())return;lastScrollKey='';updateHighlight();});
 audio.addEventListener('playing',()=>{lastScrollKey='';updateHighlight();readerStartHighlightClock();});
 document.addEventListener('visibilitychange',()=>{if(document.hidden)readerStopHighlightClock();else{lastScrollKey='';updateHighlight();readerStartHighlightClock();}});
 
