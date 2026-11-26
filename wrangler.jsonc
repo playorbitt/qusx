@@ -1,0 +1,13 @@
+// Cloudflare Workers config for the "hadhr" project's Git builds.
+// The site is static: Workers serves the repo root as assets, filtered by .assetsignore
+// to the same files .github/workflows/deploy-pages.yml publishes. Audio streams from
+// archive.org and is never uploaded. The empty "previews" block lets branch builds
+// (`npx wrangler preview`) create a preview.
+{
+  "name": "hadhr",
+  "compatibility_date": "2026-11-26",
+  "assets": {
+    "directory": "."
+  },
+  "previews": {}
+}
